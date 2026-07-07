@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Mercrowave — Is the microwave open?</title>
+<meta name="description" content="Day-by-day astrology for BBYO domestic summer 2026. If Mercury is retrograde, the microwave is open.">
+<link rel="icon" href="icon.png">
+<style>
+  :root {
+    --hot-pink: #ED228C;
+    --hot-pink: rgb(237, 33, 140);
+    --bubblegum: rgb(255, 184, 217);
+    --deep-berry: rgb(140, 10, 84);
+    --berry-dark: rgb(107, 5, 61);
+    --card: rgba(255, 255, 255, 0.55);
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "SF Pro Rounded", "Segoe UI", Roboto, sans-serif;
+    background: linear-gradient(180deg, #FFD9EB 0%, #FF6BB8 100%);
+    background-attachment: fixed;
+    min-height: 100vh;
+    color: #3d0a26;
+  }
+  .wrap { max-width: 680px; margin: 0 auto; padding: 24px 16px 96px; }
+  h1 {
+    font-size: 2.2rem; font-weight: 900; letter-spacing: -0.5px;
+    text-align: center; margin-bottom: 4px;
+  }
+  .tagline { text-align: center; font-size: .9rem; color: var(--deep-berry); margin-bottom: 18px; }
+
+  /* Tabs */
+  .tabs { display: flex; gap: 8px; justify-content: center; margin-bottom: 18px; }
+  .tab {
+    border: none; cursor: pointer; font: inherit; font-weight: 700; font-size: .95rem;
+    padding: 10px 20px; border-radius: 999px; background: rgba(255,255,255,.5); color: var(--deep-berry);
+  }
+  .tab.active { background: var(--hot-pink); color: white; box-shadow: 0 4px 12px rgba(140,10,84,.3); }
+
+  /* Program picker */
+  .picker-row { display: flex; justify-content: center; margin-bottom: 18px; }
+  select {
+    font: inherit; font-weight: 700; color: white; background: var(--hot-pink);
+    border: none; border-radius: 999px; padding: 10px 18px; cursor: pointer;
+    box-shadow: 0 4px 12px rgba(140,10,84,.3);
+  }
+
+  /* Microwave */
+  .header-card {
+    background: rgba(255,255,255,.45); backdrop-filter: blur(10px);
+    border-radius: 22px; padding: 26px 18px; text-align: center; margin-bottom: 22px;
+  }
+  .microwave {
+    width: 230px; height: 145px; margin: 0 auto 40px;
+    background: linear-gradient(180deg, #FFBFDA, #FA73B3);
+    border: 5px solid white; border-radius: 18px;
+    box-shadow: 0 10px 24px rgba(107,5,61,.35);
+    display: flex; gap: 10px; padding: 12px; position: relative;
+  }
+  .mw-cavity {
+    flex: 1; background: #59053A; border-radius: 10px; position: relative;
+    display: flex; align-items: center; justify-content: center; font-size: 34px;
+    perspective: 400px;
+  }
+  .mw-door {
+    position: absolute; inset: 0; border-radius: 10px;
+    background: rgba(140, 10, 84, .62);
+    border: 4px solid var(--bubblegum);
+    transform-origin: left center;
+    transition: transform 1s cubic-bezier(.34,1.3,.64,1);
+  }
+  .mw-door::after {
+    content: ""; position: absolute; right: 7px; top: 50%; transform: translateY(-50%);
+    width: 5px; height: 46%; background: white; border-radius: 3px;
+  }
+  .microwave.open .mw-door { transform: rotateY(-105deg); }
+  .mw-panel { width: 56px; display: flex; flex-direction: column; align-items: center; gap: 8px; }
+  .mw-clock {
+    background: #40001F; color: #FF4DA1; font-family: ui-monospace, monospace;
+    font-size: 10px; font-weight: 800; padding: 4px 6px; border-radius: 4px; letter-spacing: 1px;
+  }
+  .microwave:not(.open) .mw-clock { color: #fff; }
+  .mw-btn { width: 11px; height: 11px; border-radius: 50%; background: rgba(255,255,255,.85); }
+  .mw-bar { width: 34px; height: 13px; border-radius: 4px; background: rgba(255,255,255,.75); }
+  .cazimi-glow { filter: drop-shadow(0 0 14px orange); }
+
+  .status-line { font-size: 1.35rem; font-weight: 900; margin-bottom: 8px; }
+  .status-line.open { color: var(--hot-pink); }
+  .status-line.closed { color: var(--deep-berry); }
+  .status-sub { font-size: .85rem; color: rgba(61,10,38,.65); max-width: 420px; margin: 0 auto 14px; }
+  .chip {
+    display: inline-block; background: var(--bubblegum); color: var(--berry-dark);
+    font-size: .8rem; font-weight: 700; padding: 6px 14px; border-radius: 999px;
+  }
+
+  /* Day list */
+  .section-title { font-weight: 800; margin: 4px 4px 10px; font-size: 1.05rem; }
+  .day-card {
+    background: var(--card); border-radius: 16px; padding: 12px 14px; margin-bottom: 10px;
+    display: flex; gap: 12px; align-items: center; cursor: pointer;
+    border: 2.5px solid transparent;
+  }
+  .day-card.big { background: rgba(255, 184, 217, .9); }
+  .day-card.today { border-color: var(--hot-pink); }
+  .day-num { text-align: center; width: 52px; flex-shrink: 0; }
+  .day-num .n { font-size: .7rem; font-weight: 800; color: rgba(61,10,38,.55); }
+  .day-num .moon { font-size: 1.3rem; }
+  .day-main { flex: 1; min-width: 0; }
+  .day-date { font-size: .75rem; font-weight: 700; color: rgba(61,10,38,.55); }
+  .day-headline { font-weight: 800; font-size: .95rem; line-height: 1.25; margin: 2px 0; }
+  .day-moon { font-size: .75rem; color: rgba(61,10,38,.55); }
+  .day-lock { font-size: 1.2rem; flex-shrink: 0; display: flex; align-items: center; }
+  .day-lock svg { width: 22px; height: 22px; }
+  .lock-open svg { fill: var(--hot-pink); }
+  .lock-closed svg { fill: var(--deep-berry); }
+
+  .day-detail { display: none; padding: 4px 6px 14px; }
+  .day-card.expanded + .day-detail { display: block; }
+  .day-vibe {
+    background: rgba(255,184,217,.5); border-radius: 12px; padding: 12px 14px;
+    font-weight: 600; font-size: .9rem; margin-bottom: 10px;
+  }
+  .day-why { font-size: .87rem; line-height: 1.5; white-space: pre-line; color: rgba(61,10,38,.85); }
+
+  /* Planner */
+  .rules-card {
+    background: rgba(255,255,255,.45); backdrop-filter: blur(10px);
+    border-radius: 20px; padding: 18px; margin-bottom: 16px;
+  }
+  .rules-card h2 { font-size: 1.05rem; margin-bottom: 10px; }
+  .rules-card li { list-style: none; font-size: .85rem; color: rgba(61,10,38,.75); margin-bottom: 6px; }
+  .month-card {
+    background: var(--card); border-radius: 16px; padding: 14px 16px; margin-bottom: 10px; cursor: pointer;
+  }
+  .month-card.great { background: rgba(255,184,217,.9); }
+  .month-head { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 6px; }
+  .month-head h3 { font-size: 1rem; font-weight: 900; }
+  .month-rating { font-size: .78rem; font-weight: 800; color: var(--deep-berry); }
+  .month-rating.bad { color: var(--hot-pink); }
+  .month-best { font-size: .88rem; font-weight: 700; color: var(--berry-dark); margin-bottom: 6px; }
+  .month-why { font-size: .84rem; line-height: 1.5; color: rgba(61,10,38,.8);
+    display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+  .month-card.expanded .month-why { display: block; -webkit-line-clamp: unset; }
+  .month-avoid { font-size: .78rem; font-weight: 700; color: var(--hot-pink); margin-top: 8px; }
+
+  .footer-note {
+    text-align: center; font-size: .75rem; color: rgba(61,10,38,.55);
+    margin-top: 26px; padding: 0 20px;
+  }
+  .footer-note a { color: var(--deep-berry); }
+  .hidden { display: none !important; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Mercrowave 🍲</h1>
+  <p class="tagline">Real astrology for BBYO summer 2026 · if Mercury is retrograde, the microwave is open</p>
+
+  <div class="tabs">
+    <button class="tab active" id="tab-summer" onclick="showTab('summer')">⛺ Summer 2026</button>
+    <button class="tab" id="tab-planner" onclick="showTab('planner')">📅 Staff Planner</button>
+  </div>
+
+  <!-- SUMMER TAB -->
+  <div id="summer">
+    <div class="picker-row">
+      <select id="programPicker" onchange="renderSummer()"></select>
+    </div>
+
+    <div class="header-card">
+      <div class="microwave" id="microwave">
+        <div class="mw-cavity"><span id="food">🥡</span><div class="mw-door"></div></div>
+        <div class="mw-panel">
+          <div class="mw-clock" id="mwClock">0:30</div>
+          <div class="mw-btn"></div><div class="mw-btn"></div><div class="mw-btn"></div>
+          <div class="mw-bar"></div>
+        </div>
+      </div>
+      <div class="status-line" id="statusLine"></div>
+      <p class="status-sub" id="statusSub"></p>
+      <span class="chip" id="todayChip"></span>
+    </div>
+
+    <div class="section-title" id="listTitle"></div>
+    <div id="dayList"></div>
+  </div>
+
+  <!-- PLANNER TAB -->
+  <div id="planner" class="hidden">
+    <div class="rules-card">
+      <h2>Reviews &amp; goal-setting · Sept 2026 – May 2027</h2>
+      <ul>
+        <li>🌑 Goal-setting on New Moons — fresh cycle, fresh intentions</li>
+        <li>🔒 Reviews only while the microwave is closed (Mercury direct)</li>
+        <li>💔 Venus retrograde = no feedback convos (Oct 3 – Nov 13)</li>
+        <li>🐌 Mars retrograde = talk fine, launch slow (Jan 10 – Apr 1)</li>
+        <li>🌘 Eclipses = no big decisions (Feb 6 &amp; Feb 20)</li>
+      </ul>
+    </div>
+    <div id="monthList"></div>
+  </div>
+
+  <p class="footer-note">
+    Retrogrades, moon signs, and eclipses are real 2026–27 astronomy.
+    Whether they control your life is between you and the sky. 🍲<br>
+    Companion site to the <strong>Mercrowave</strong> iOS app · made with love (and Mercury anxiety)
+  </p>
+</div>
+
+<script src="data.js"></script>
+<script>
+// Clear open/closed padlock icons (color-coded, unlike look-alike emoji)
+const LOCK_CLOSED = `<svg viewBox="0 0 24 24"><path d="M12 2a5 5 0 0 0-5 5v3a3 3 0 0 0-3 3v6a3 3 0 0 0 3 3h10a3 3 0 0 0 3-3v-6a3 3 0 0 0-3-3V7a5 5 0 0 0-5-5zm-3 8V7a3 3 0 1 1 6 0v3H9zm3 5a1.5 1.5 0 0 1 .75 2.8V19a.75.75 0 0 1-1.5 0v-1.2A1.5 1.5 0 0 1 12 15z"/></svg>`;
+const LOCK_OPEN = `<svg viewBox="0 0 24 24"><path d="M17 2a5 5 0 0 0-5 5v3H7a3 3 0 0 0-3 3v6a3 3 0 0 0 3 3h10a3 3 0 0 0 3-3v-6a3 3 0 0 0-3-3h-3V7a3 3 0 1 1 6 0h2a5 5 0 0 0-5-5zm-5 13a1.5 1.5 0 0 1 .75 2.8V19a.75.75 0 0 1-1.5 0v-1.2A1.5 1.5 0 0 1 12 15z"/></svg>`;
+const PHASES = { "🌑":"New Moon","🌒":"Waxing Crescent","🌓":"First Quarter","🌔":"Waxing Gibbous",
+                 "🌕":"Full Moon","🌖":"Waning Gibbous","🌗":"Last Quarter","🌘":"Waning Crescent" };
+const MONTH_NAMES = { 6:"June", 7:"July", 8:"August" };
+const RATING = { great:["💖","Book it",false], fine:["🙂","Good with care",false],
+                 caution:["⚠️","Tight windows",true], avoid:["🚫","Reschedule if you can",true] };
+
+function todayMD() {
+  const now = new Date();
+  if (now.getFullYear() !== 2026) return null;
+  return [now.getMonth() + 1, now.getDate()];
+}
+function inRange(md, start, end) {
+  const v = md[0]*100 + md[1];
+  return v >= start[0]*100 + start[1] && v <= end[0]*100 + end[1];
+}
+function defaultProgram() {
+  const md = todayMD();
+  if (md) {
+    for (const key of ["iltc","kallah","cltc2","cltc3","cltc4","cltc1"])
+      if (inRange(md, PROGRAMS[key].start, PROGRAMS[key].end)) return key;
+  }
+  return "iltc";
+}
+
+// Build picker
+const picker = document.getElementById("programPicker");
+for (const [key, p] of Object.entries(PROGRAMS)) {
+  const o = document.createElement("option");
+  o.value = key; o.textContent = `${p.name} · ${p.range}`;
+  picker.appendChild(o);
+}
+picker.value = defaultProgram();
+
+function renderSummer() {
+  const key = picker.value, p = PROGRAMS[key];
+  const days = DAYS.filter(d => inRange([d.m, d.d], p.start, p.end));
+  const md = todayMD();
+  const todayIdx = md ? days.findIndex(d => d.m === md[0] && d.d === md[1]) : -1;
+  const headerDay = todayIdx >= 0 ? days[todayIdx] : days[0];
+
+  // Microwave
+  const mw = document.getElementById("microwave");
+  mw.classList.toggle("open", headerDay.rx);
+  document.getElementById("mwClock").textContent = headerDay.rx ? "RETRO" : "0:30";
+  const food = document.getElementById("food");
+  food.textContent = headerDay.cazimi ? "🍲" : "🥡";
+  food.classList.toggle("cazimi-glow", headerDay.cazimi);
+
+  const line = document.getElementById("statusLine");
+  line.textContent = headerDay.rx ? "THE MICROWAVE IS OPEN" : "THE MICROWAVE IS CLOSED";
+  line.className = "status-line " + (headerDay.rx ? "open" : "closed");
+  document.getElementById("statusSub").textContent = headerDay.rx
+    ? (headerDay.cazimi
+        ? "Mercury retrograde — but it's CAZIMI. The food is hot today only."
+        : "Mercury is retrograde in Cancer (June 29 – July 23). Nothing reheats correctly. Blame the planet.")
+    : "Mercury is direct. Communication heats evenly. The door is open June 29, 1:36 PM – July 23, 5:57 PM ET.";
+  document.getElementById("todayChip").textContent = todayIdx >= 0
+    ? `✨ Today is ${p.name} Day ${todayIdx + 1} of ${days.length}` : `📅 ${p.range}, 2026`;
+
+  document.getElementById("listTitle").textContent = `${p.name}, Day by Day — ${p.range}`;
+
+  // Day list
+  const list = document.getElementById("dayList");
+  list.innerHTML = "";
+  days.forEach((d, i) => {
+    const card = document.createElement("div");
+    card.className = "day-card" + (d.big ? " big" : "") + (i === todayIdx ? " today" : "");
+    card.innerHTML = `
+      <div class="day-num"><div class="n">Day ${i + 1}</div><div class="moon">${d.emoji}</div></div>
+      <div class="day-main">
+        <div class="day-date">${d.w}, ${MONTH_NAMES[d.m]} ${d.d}</div>
+        <div class="day-headline">${d.headline}</div>
+        <div class="day-moon">Moon in ${d.sign} · ${PHASES[d.emoji] || "Moon"}</div>
+      </div>
+      <div class="day-lock ${d.rx ? "lock-open" : "lock-closed"}">${d.cazimi ? "🍲" : (d.rx ? LOCK_OPEN : LOCK_CLOSED)}</div>`;
+    const detail = document.createElement("div");
+    detail.className = "day-detail";
+    detail.innerHTML = `<div class="day-vibe">${d.vibe}</div><div class="day-why">${d.detail}</div>`;
+    card.onclick = () => card.classList.toggle("expanded");
+    list.appendChild(card);
+    list.appendChild(detail);
+  });
+
+  if (todayIdx >= 0) {
+    setTimeout(() => {
+      const el = list.children[todayIdx * 2];
+      if (el) el.scrollIntoView({ behavior: "smooth", block: "center" });
+    }, 300);
+  }
+}
+
+function renderPlanner() {
+  const list = document.getElementById("monthList");
+  list.innerHTML = "";
+  MONTHS.forEach(mn => {
+    const [emoji, label, bad] = RATING[mn.rating];
+    const card = document.createElement("div");
+    card.className = "month-card" + (mn.rating === "great" ? " great" : "");
+    card.innerHTML = `
+      <div class="month-head"><h3>${mn.name}</h3>
+        <span class="month-rating${bad ? " bad" : ""}">${emoji} ${label}</span></div>
+      <div class="month-best">⭐ ${mn.bestDays}</div>
+      <div class="month-why">${mn.why}</div>
+      <div class="month-avoid">✋ ${mn.avoid}</div>`;
+    card.onclick = () => card.classList.toggle("expanded");
+    list.appendChild(card);
+  });
+}
+
+function showTab(name) {
+  document.getElementById("summer").classList.toggle("hidden", name !== "summer");
+  document.getElementById("planner").classList.toggle("hidden", name !== "planner");
+  document.getElementById("tab-summer").classList.toggle("active", name === "summer");
+  document.getElementById("tab-planner").classList.toggle("active", name === "planner");
+}
+
+renderSummer();
+renderPlanner();
+</script>
+</body>
+</html>
